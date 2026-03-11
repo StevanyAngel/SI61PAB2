@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_daftar_movie/models/movie.dart';
 import 'package:flutter_daftar_movie/screens/detail_screen.dart';
-import 'package:flutter_daftar_movie/screens/home_screen.dart';
 import 'package:flutter_daftar_movie/services/api_services.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -19,7 +18,8 @@ class _HomeScreenState extends State<HomeScreen> {
   List<Movie> _popularMovies = [];
 
   @override
-  initState() {
+  void initState() {
+    // TODO: implement initState
     super.initState();
     _loadMovies();
   }
@@ -79,13 +79,14 @@ class _HomeScreenState extends State<HomeScreen> {
               return Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: GestureDetector(
-                  onTap: () => {
+                  onTap: () {
+                    // Handle movie tap, e.g., navigate to details page
                     Navigator.push(
                       context,
                       MaterialPageRoute(
                         builder: (context) => DetailScreen(movie: movie),
                       ),
-                    ),
+                    );
                   },
                   child: Column(
                     children: [
