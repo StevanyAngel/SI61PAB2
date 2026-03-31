@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_daftar_movie/models/movie.dart';
 import 'package:flutter_daftar_movie/screens/detail_screen.dart';
+import 'package:flutter_daftar_movie/screens/favorite_screen.dart'; // Import halaman favorit
 import 'package:flutter_daftar_movie/services/api_services.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -12,6 +13,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final ApiService _apiService = ApiService();
+  int _selectedIndex = 0; // Index untuk navigasi
 
   List<Movie> _allMovies = [];
   List<Movie> _trendingMovies = [];
@@ -19,7 +21,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     _loadMovies();
   }
@@ -41,19 +42,61 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
+  // Widget untuk konten utama Home
+  Widget _buildHomeContent() {
+    return SingleChildScrollView(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildMoviesList('All Movies', _allMovies),
+          _buildMoviesList('Trending Movies', _trendingMovies),
+          _buildMoviesList('Popular Movies', _popularMovies),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    // List halaman yang akan ditampilkan berdasarkan index navigasi
+    final List<Widget> _pages = [
+      _buildHomeContent(),
+      const FavoriteScreen(), // Halaman favorit yang sudah kita buat sebelumnya
+    ];
+
     return Scaffold(
-      appBar: AppBar(title: const Text('Film')),
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildMoviesList('All Movies', _allMovies),
-            _buildMoviesList('Trending Movies', _trendingMovies),
-            _buildMoviesList('Popular Movies', _popularMovies),
-          ],
-        ),
+      appBar: AppBar(
+        title: const Text('Film'),
+        // Tambahkan tombol cepat ke favorit di AppBar juga jika mau
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.favorite, color: Colors.red),
+            onPressed: () {
+              setState(() {
+                _selectedIndex = 1; // Pindah ke tab favorit
+              });
+            },
+          ),
+        ],
+      ),
+      // Body akan berubah sesuai tab yang dipilih
+      body: _pages[_selectedIndex],
+
+      // TAMBAHKAN NAVIGASI DI BAWAH INI
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _selectedIndex,
+        onTap: (index) {
+          setState(() {
+            _selectedIndex = index;
+          });
+        },
+        items: const [
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.favorite),
+            label: 'Favorite',
+          ),
+        ],
       ),
     );
   }
@@ -70,7 +113,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
         SizedBox(
-          height: 200,
+          height: 220, // Sedikit ditinggikan agar teks tidak terpotong
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
             itemCount: movies.length,
@@ -80,7 +123,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 padding: const EdgeInsets.all(8.0),
                 child: GestureDetector(
                   onTap: () {
-                    // Handle movie tap, e.g., navigate to details page
                     Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -90,18 +132,29 @@ class _HomeScreenState extends State<HomeScreen> {
                   },
                   child: Column(
                     children: [
-                      Image.network(
-                        'https://image.tmdb.org/t/p/w500${movie.posterPath}',
-                        height: 150,
-                        width: 100,
-                        fit: BoxFit.cover,
+                      ClipRRect(
+                        // Tambahkan sedikit lengkungan pada gambar
+                        borderRadius: BorderRadius.circular(8),
+                        child: Image.network(
+                          'https://image.tmdb.org/t/p/w500${movie.posterPath}',
+                          height: 150,
+                          width: 100,
+                          fit: BoxFit.cover,
+                        ),
                       ),
                       const SizedBox(height: 5),
-                      Text(
-                        movie.title.length > 14
-                            ? '${movie.title.substring(0, 10)}...'
-                            : movie.title,
-                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      SizedBox(
+                        width: 100,
+                        child: Text(
+                          movie.title,
+                          textAlign: TextAlign.center,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12,
+                          ),
+                        ),
                       ),
                     ],
                   ),
